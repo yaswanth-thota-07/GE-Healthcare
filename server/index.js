@@ -41,8 +41,8 @@ app.use("/api/resume", require("./routes/resumeRoutes"));
 app.use("/api/policy", require("./routes/policyRoutes"));
 app.use("/api/hospitals", require("./routes/hospitalRoutes"));
 
-// Health check endpoint
-app.get("/", (req, res) => {
+// API health check (always available)
+app.get("/api/health", (req, res) => {
   res.json({ message: "Hospitality API is running 🚀" });
 });
 
@@ -50,10 +50,16 @@ app.get("/", (req, res) => {
 
 const clientDist = path.join(__dirname, "../client/dist");
 if (fs.existsSync(clientDist)) {
+  // Serve the built React app — including the root path "/"
   app.use(express.static(clientDist));
   // SPA fallback: any non-API, non-uploads GET request serves the React app
   app.get(/^\/(?!api\/|uploads\/).*/, (req, res) => {
     res.sendFile(path.join(clientDist, "index.html"));
+  });
+} else {
+  // No frontend build available — expose API health at root (dev/local use)
+  app.get("/", (req, res) => {
+    res.json({ message: "Hospitality API is running 🚀" });
   });
 }
 
